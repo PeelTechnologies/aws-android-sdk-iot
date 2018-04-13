@@ -3,7 +3,7 @@ package com.amazonaws.mobileconnectors.iot;
 /**
  * Possible connection states for MQTT connection of MqttManager.
  */
-enum MqttManagerConnectionState {
+public enum MqttManagerConnectionState {
     /**
      * Client is attempting to connect.
      */
@@ -19,5 +19,6 @@ enum MqttManagerConnectionState {
     /**
      * Automatically reconnecting after connection loss.
      */
-    Reconnecting
+    Reconnecting,
+    Disconnecting;
 }

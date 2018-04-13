@@ -20,35 +20,5 @@ package com.amazonaws.mobileconnectors.iot;
  * related to the client occur.
  */
 public interface AWSIotMqttClientStatusCallback {
-
-    /**
-     * Possible connection statuses.
-     */
-
-    enum AWSIotMqttClientStatus {
-        /**
-         * Client is attempting to connect.
-         */
-        Connecting,
-        /**
-         * Client successfully connected.
-         */
-        Connected,
-        /**
-         * Connection was lost. Can be user initiated disconnect or network.
-         */
-        ConnectionLost,
-        /**
-         * Automatically reconnecting after connection loss.
-         */
-        Reconnecting
-    }
-
-    /**
-     * This method is called when the connection to the server is changed.
-     *
-     * @param status the current status of MQTT connection.
-     * @param throwable a throwable in the case of connection exceptions.
-     */
-    void onStatusChanged(AWSIotMqttClientStatus status, Throwable throwable);
+    void onStatusChanged(MqttManagerConnectionState state, Throwable throwable);
 }
