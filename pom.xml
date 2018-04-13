@@ -2,8 +2,9 @@
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.amazonaws</groupId>
+  <groupId>com.github.PeelTechnologies</groupId>
   <artifactId>aws-android-sdk-iot</artifactId>
+  <version>2.6.18_1</version>
   <packaging>jar</packaging>
   <name>AWS SDK for Android - AWS IoT</name>
   <description>The AWS Android SDK for AWS IoT module holds the client classes that are used for communicating with AWS IoT Service</description>
@@ -12,8 +13,15 @@
   <parent>
     <groupId>com.amazonaws</groupId>
     <artifactId>aws-android-sdk-pom</artifactId>
-    <version>2.6.17</version>
+    <version>2.6.18</version>
   </parent>
+
+  <repositories>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
@@ -23,10 +31,10 @@
       <version>2.6.17</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.paho</groupId>
-      <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+      <groupId>com.github.PeelTechnologies</groupId>
+      <artifactId>paho.client.mqttv3</artifactId>
       <optional>false</optional>
-      <version>1.1.0</version>
+      <version>1.1.0_2</version>
     </dependency>
   </dependencies>
 
