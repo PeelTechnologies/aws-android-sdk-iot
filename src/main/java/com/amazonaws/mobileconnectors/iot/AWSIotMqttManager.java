@@ -44,7 +44,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,14 +66,6 @@ public class AWSIotMqttManager {
     private static final Integer MILLIS_IN_ONE_SECOND = 1000;
 
     private static final Log LOGGER = LogFactory.getLog(AWSIotMqttManager.class);
-    /** Constant for number of tokens in endpoint. */
-    private static final int ENDPOINT_SPLIT_SIZE = 5;
-    /** Constant for token offset of "iot" in endpoint. */
-    private static final int ENDPOINT_IOT_OFFSET = 1;
-    /** Constant for token offset of "amazonaws" in endpoint. */
-    private static final int ENDPOINT_DOMAIN_OFFSET = 3;
-    /** Constant for token offset of "com" in endpoint. */
-    private static final int ENDPOINT_TLD_OFFSET = 4;
 
     /** Default value for starting delay in exponential backoff reconnect algorithm. */
     public static final Integer DEFAULT_MIN_RECONNECT_RETRY_TIME_SECONDS = 4;
@@ -895,27 +886,7 @@ public class AWSIotMqttManager {
                         mqttLWT.getQos().asInt(), false);
             }
 
-            if (isWebSocketClient) {
-                try {
-                    LOGGER.debug("Reconnect to mqtt - mqttWebSocketURL: " + Arrays.toString(options.getServerURIs()));
-                    // Specify the URL through the server URI array.  This is checked
-                    // at connect time and allows us to specify a new URL (with new
-                    // SigV4 parameters) for each connect.
-                    AWSIotWebSocketUrlSigner signer = new AWSIotWebSocketUrlSigner("iotdata");
-                    final String mqttWebSocketURL = signer.getSignedUrl(webSocketEndpoint, clientCredentialsProvider.getCredentials(),
-                            System.currentTimeMillis());
-                    options.setServerURIs(new String[] {mqttWebSocketURL});
-                } catch (AmazonClientException e) {
-                    LOGGER.error("Failed to get credentials. AmazonClientException: ", e);
-                    //TODO: revisit how to handle exception thrown by getCredentials() properly.
-                    if (scheduleReconnect()) {
-                        connectionState = MqttManagerConnectionState.Reconnecting;
-                    } else {
-                        connectionState = MqttManagerConnectionState.Disconnected;
-                    }
-                    userConnectionCallback();
-                }
-            } else {
+            if (!isWebSocketClient) {
                 options.setSocketFactory(clientSocketFactory);
             }
 
