@@ -87,7 +87,7 @@ public class AWSIotMqttManager {
     private static final Integer DEFAULT_CONNECTION_STABILITY_TIME_SECONDS = 10;
 
     private final Timer reconnectTimer = new Timer();
-    private AwsIotConnectTimerTask connectTimerTask = null;
+    private AWSIotConnectTimerTask connectTimerTask = null;
 
     /** The underlying Paho Java MQTT client. */
     private MqttAsyncClient mqttClient;
@@ -438,6 +438,7 @@ public class AWSIotMqttManager {
             throw new IllegalArgumentException("Keep alive must be >= 0");
         }
         userKeepAlive = keepAlive;
+        options.setKeepAliveInterval(keepAlive);
     }
 
     /**
@@ -555,15 +556,16 @@ public class AWSIotMqttManager {
         isWebSocketClient = true;
         LOGGER.debug("MQTT broker: " + webSocketEndpoint);
         mqttClient = new MqttAsyncClient("wss://" + webSocketEndpoint, mqttClientId,
-                new MemoryPersistence());
+                new MemoryPersistence(), new AWSIotPingSender());
         // Default of 10 was insufficient for stress testing.
         options.setMaxInflight(100);
-        options.setAutomaticReconnect(true);
+        options.setAutomaticReconnect(false);
         options.setConnectionTimeout(5);
-        options.setKeepAliveInterval(3600);
+        options.setCleanSession(true);
+        options.setKeepAliveInterval(userKeepAlive);
         setupCallbackForMqttClient();
         if (connectTimerTask == null) {
-            connectTimerTask = new AwsIotConnectTimerTask(this);
+            connectTimerTask = new AWSIotConnectTimerTask(this);
             reconnectTimer.schedule(connectTimerTask, 100L, 20000L);
         }
     }
@@ -738,10 +740,6 @@ public class AWSIotMqttManager {
             final AWSIotMqttClientStatusCallback statusCallback) {
         LOGGER.debug("ready to do mqtt connect");
 
-        // AWS IoT does not currently support persistent sessions
-        options.setCleanSession(true);
-        options.setKeepAliveInterval(userKeepAlive);
-
         if (isMetricsEnabled()) {
             options.setUserName("?SDK=Android&Version=" + SDK_VERSION);
         }
@@ -768,8 +766,6 @@ public class AWSIotMqttManager {
                     if (mqttMessageQueue.size() > 0) {
                         publishMessagesFromQueue();
                     }
-
-                    userConnectionCallback();
                 }
 
                 @Override
@@ -788,7 +784,6 @@ public class AWSIotMqttManager {
                         scheduleReconnect();
                     } else {
                         connectionState = MqttManagerConnectionState.Disconnected;
-                        userConnectionCallback(e);
                     }
                 }
             });
@@ -836,19 +831,19 @@ public class AWSIotMqttManager {
     // if disconnect fails or succeeds reinitialization should still be done
     public void disconnectAndInitialize() {
         try {
-            mqttClient.disconnectForcibly(0,1);
+            mqttClient.disconnectForcibly(0, 1);
         } catch (MqttException e) {
-            LOGGER.error(e);
+            LOGGER.debug(e);
         }
         try {
             mqttClient.close();
         } catch (MqttException e) {
-            LOGGER.error(e);
+            LOGGER.debug(e);
         }
         try {
             initInternalMqttClient(clientCredentialsProvider);
         } catch (MqttException e) {
-            LOGGER.error(e);
+            LOGGER.error("Failed to reinit MQTT", e);
         }
         connectTimerTask.setAutoReconnectActive(false);
         connect(userStatusCallback);
