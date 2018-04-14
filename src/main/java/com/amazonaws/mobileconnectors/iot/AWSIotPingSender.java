@@ -16,7 +16,7 @@ final class AWSIotPingSender extends TimerPingSender {
     private ClientComms comms;
     private static final long PING_PERIOD = 10000L;
 
-    private final Timer heartbeatPingTimer = new Timer("Heartbeat Ping Timer");
+    private Timer heartbeatPingTimer;
 
     @Override
     public void init(ClientComms comms) {
@@ -28,12 +28,16 @@ final class AWSIotPingSender extends TimerPingSender {
     // heartbeat timer is also started.
     public void start() {
         super.start();
+        heartbeatPingTimer = new Timer("Heartbeat Ping Timer");
         heartbeatPingTimer.schedule(new HeartbeatPingTask(), 1L, PING_PERIOD);
     }
 
     public void stop() {
         super.stop();
-        heartbeatPingTimer.cancel();
+        if (heartbeatPingTimer != null) {
+            heartbeatPingTimer.cancel();
+            heartbeatPingTimer = null;
+        }
     }
 
     private final class HeartbeatPingTask extends TimerTask {

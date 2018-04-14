@@ -86,9 +86,6 @@ public class AWSIotMqttManager {
     /** Default value for "connection established" hysteresis timer. */
     private static final Integer DEFAULT_CONNECTION_STABILITY_TIME_SECONDS = 10;
 
-    private final Timer reconnectTimer = new Timer();
-    private AWSIotAutoReconnectTimerTask connectTimerTask = null;
-
     /** The underlying Paho Java MQTT client. */
     private MqttAsyncClient mqttClient;
 
@@ -564,10 +561,6 @@ public class AWSIotMqttManager {
         options.setCleanSession(true);
         options.setKeepAliveInterval(userKeepAlive);
         setupCallbackForMqttClient();
-        if (connectTimerTask == null) {
-            connectTimerTask = new AWSIotAutoReconnectTimerTask(this);
-            reconnectTimer.schedule(connectTimerTask, 100L, 20000L);
-        }
     }
 
     public void reconnect() throws MqttException {
@@ -845,7 +838,6 @@ public class AWSIotMqttManager {
         } catch (MqttException e) {
             LOGGER.error("Failed to reinit MQTT", e);
         }
-        connectTimerTask.setAutoReconnectActive(false);
         connect(userStatusCallback);
     }
 
@@ -1261,7 +1253,6 @@ public class AWSIotMqttManager {
             public void connectComplete(boolean reconnect, String serverURI) {
                 LOGGER.info("MQTT Status: extended callback : connected");
                 connectionState = MqttManagerConnectionState.Connected;
-                connectTimerTask.setAutoReconnectActive(true);
                 userConnectionCallback();
             }
 
