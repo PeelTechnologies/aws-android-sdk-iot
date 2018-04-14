@@ -6,13 +6,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
-class AWSIotConnectTimerTask extends TimerTask {
-    private static final Log LOGGER = LogFactory.getLog(AWSIotConnectTimerTask.class);
+final class AWSIotAutoReconnectTimerTask extends TimerTask {
+    private static final Log LOGGER = LogFactory.getLog(AWSIotAutoReconnectTimerTask.class);
 
     private final AWSIotMqttManager iotMqttManager;
     private boolean autoReconnectActive;
 
-    public AWSIotConnectTimerTask(AWSIotMqttManager iotMqttManager) {
+    public AWSIotAutoReconnectTimerTask(AWSIotMqttManager iotMqttManager) {
         this.iotMqttManager = iotMqttManager;
     }
 

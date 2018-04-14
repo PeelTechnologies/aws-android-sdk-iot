@@ -87,7 +87,7 @@ public class AWSIotMqttManager {
     private static final Integer DEFAULT_CONNECTION_STABILITY_TIME_SECONDS = 10;
 
     private final Timer reconnectTimer = new Timer();
-    private AWSIotConnectTimerTask connectTimerTask = null;
+    private AWSIotAutoReconnectTimerTask connectTimerTask = null;
 
     /** The underlying Paho Java MQTT client. */
     private MqttAsyncClient mqttClient;
@@ -565,7 +565,7 @@ public class AWSIotMqttManager {
         options.setKeepAliveInterval(userKeepAlive);
         setupCallbackForMqttClient();
         if (connectTimerTask == null) {
-            connectTimerTask = new AWSIotConnectTimerTask(this);
+            connectTimerTask = new AWSIotAutoReconnectTimerTask(this);
             reconnectTimer.schedule(connectTimerTask, 100L, 20000L);
         }
     }
