@@ -74,4 +74,11 @@ final class AWSIotPingSender extends TimerPingSender {
 			}
 		}
     }
+
+    // Disconnectingtimer task scheduler is long-lived compared to other timers in this class.
+    // However, when we reinitialize asyncClient we have to ensure that this scheduler and task are shutdown 
+    // before reinitializing new asyncClient
+	public void closeDisconnectingTimer() {
+		disconnectingCheckTimer.cancel();
+	}
 }
