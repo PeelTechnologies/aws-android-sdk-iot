@@ -17,6 +17,14 @@ final class AWSIotPingSender extends TimerPingSender {
     private static final long PING_PERIOD = 10000L;
 
     private Timer heartbeatPingTimer;
+    private final Timer disconnectingCheckTimer = new Timer("Disconnecting check timer "+System.currentTimeMillis());
+
+	private final AWSIotMqttManager manager;
+    
+    public AWSIotPingSender(AWSIotMqttManager manager) {
+    	this.manager = manager;
+    	disconnectingCheckTimer.schedule(new DisconnectingCheckTask(), 1L, 20000L);
+    }
 
     @Override
     public void init(ClientComms comms) {
@@ -28,7 +36,7 @@ final class AWSIotPingSender extends TimerPingSender {
     // heartbeat timer is also started.
     public void start() {
         super.start();
-        heartbeatPingTimer = new Timer("Heartbeat Ping Timer");
+        heartbeatPingTimer = new Timer("Heartbeat Ping Timer "+System.currentTimeMillis());
         heartbeatPingTimer.schedule(new HeartbeatPingTask(), 1L, PING_PERIOD);
     }
 
@@ -51,4 +59,27 @@ final class AWSIotPingSender extends TimerPingSender {
             }
         }
     }
+
+    // Timer task to reinitialize mqttAsync client when it gets stuck in disconnecting state.
+    private final class DisconnectingCheckTask extends TimerTask {
+		@Override
+		public void run() {
+			try {
+				if (comms.isDisconnecting()) {
+					LOGGER.info("Detected disconnecting state. Triggering reInitialize.");
+					manager.disconnectAndInitialize();
+				}
+			} catch(Exception e) {
+				LOGGER.debug(e);
+			}
+		}
+    }
+
+    // Disconnectingtimer task scheduler is long-lived compared to other timers in this class.
+    // However, when we reinitialize asyncClient we have to ensure that this scheduler and task are shutdown 
+    // before reinitializing new asyncClient
+	public void cancelAllTimers() {
+        stop();
+        disconnectingCheckTimer.cancel();
+	}
 }

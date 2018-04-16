@@ -209,6 +209,7 @@ public class AWSIotMqttManager {
 
     /** Override value for System.currentTimeInMillis.  Used for unit testing reconnect logic. */
     private Long unitTestMillisOverride;
+	private AWSIotPingSender pingSender;
 
     /**
      * Return the customer specific endpoint prefix.
@@ -552,8 +553,9 @@ public class AWSIotMqttManager {
         }
         isWebSocketClient = true;
         LOGGER.debug("MQTT broker: " + webSocketEndpoint);
+        pingSender = new AWSIotPingSender(this);
         mqttClient = new MqttAsyncClient("wss://" + webSocketEndpoint, mqttClientId,
-                new MemoryPersistence(), new AWSIotPingSender());
+                new MemoryPersistence(), pingSender);
         // Default of 10 was insufficient for stress testing.
         options.setMaxInflight(100);
         options.setAutomaticReconnect(false);
@@ -823,22 +825,25 @@ public class AWSIotMqttManager {
 
     // if disconnect fails or succeeds reinitialization should still be done
     public void disconnectAndInitialize() {
+        if (pingSender != null) {
+        	pingSender.cancelAllTimers();
+        }
         try {
             mqttClient.disconnectForcibly(0, 1);
-        } catch (MqttException e) {
+        } catch (Exception e) {
             LOGGER.debug(e);
         }
         try {
             mqttClient.close();
-        } catch (MqttException e) {
+        } catch (Exception e) {
             LOGGER.debug(e);
         }
         try {
             initInternalMqttClient(clientCredentialsProvider);
-        } catch (MqttException e) {
+            connect(userStatusCallback);
+        } catch (Exception e) {
             LOGGER.error("Failed to reinit MQTT", e);
         }
-        connect(userStatusCallback);
     }
 
     /**
