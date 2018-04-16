@@ -17,6 +17,14 @@ final class AWSIotPingSender extends TimerPingSender {
     private static final long PING_PERIOD = 10000L;
 
     private Timer heartbeatPingTimer;
+    private final Timer disconnectingCheckTimer = new Timer("Disconnecting check timer");
+
+	private final AWSIotMqttManager manager;
+    
+    public AWSIotPingSender(AWSIotMqttManager manager) {
+    	this.manager = manager;
+    	disconnectingCheckTimer.schedule(new DisconnectingCheckTask(), 1L, 20000L);
+    }
 
     @Override
     public void init(ClientComms comms) {
@@ -50,5 +58,20 @@ final class AWSIotPingSender extends TimerPingSender {
                 LOGGER.info(e);
             }
         }
+    }
+
+    // Timer task to reinitialize mqttAsync client when it gets stuck in disconnecting state.
+    private final class DisconnectingCheckTask extends TimerTask {
+		@Override
+		public void run() {
+			try {
+				if (comms.isDisconnecting()) {
+					LOGGER.info("Detected disconnecting state. Triggering reInitialize.");
+					manager.disconnectAndInitialize();
+				}
+			} catch(Exception e) {
+				LOGGER.debug(e);
+			}
+		}
     }
 }

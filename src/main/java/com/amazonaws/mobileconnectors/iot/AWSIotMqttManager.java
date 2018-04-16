@@ -553,7 +553,7 @@ public class AWSIotMqttManager {
         isWebSocketClient = true;
         LOGGER.debug("MQTT broker: " + webSocketEndpoint);
         mqttClient = new MqttAsyncClient("wss://" + webSocketEndpoint, mqttClientId,
-                new MemoryPersistence(), new AWSIotPingSender());
+                new MemoryPersistence(), new AWSIotPingSender(this));
         // Default of 10 was insufficient for stress testing.
         options.setMaxInflight(100);
         options.setAutomaticReconnect(false);
