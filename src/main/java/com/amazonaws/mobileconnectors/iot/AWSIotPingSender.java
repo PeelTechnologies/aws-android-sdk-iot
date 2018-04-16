@@ -17,7 +17,7 @@ final class AWSIotPingSender extends TimerPingSender {
     private static final long PING_PERIOD = 10000L;
 
     private Timer heartbeatPingTimer;
-    private final Timer disconnectingCheckTimer = new Timer("Disconnecting check timer");
+    private final Timer disconnectingCheckTimer = new Timer("Disconnecting check timer "+System.currentTimeMillis());
 
 	private final AWSIotMqttManager manager;
     
@@ -36,7 +36,7 @@ final class AWSIotPingSender extends TimerPingSender {
     // heartbeat timer is also started.
     public void start() {
         super.start();
-        heartbeatPingTimer = new Timer("Heartbeat Ping Timer");
+        heartbeatPingTimer = new Timer("Heartbeat Ping Timer "+System.currentTimeMillis());
         heartbeatPingTimer.schedule(new HeartbeatPingTask(), 1L, PING_PERIOD);
     }
 
@@ -78,7 +78,8 @@ final class AWSIotPingSender extends TimerPingSender {
     // Disconnectingtimer task scheduler is long-lived compared to other timers in this class.
     // However, when we reinitialize asyncClient we have to ensure that this scheduler and task are shutdown 
     // before reinitializing new asyncClient
-	public void closeDisconnectingTimer() {
-		disconnectingCheckTimer.cancel();
+	public void cancelAllTimers() {
+        stop();
+        disconnectingCheckTimer.cancel();
 	}
 }

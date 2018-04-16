@@ -826,7 +826,7 @@ public class AWSIotMqttManager {
     // if disconnect fails or succeeds reinitialization should still be done
     public void disconnectAndInitialize() {
         if (pingSender != null) {
-        	pingSender.closeDisconnectingTimer();
+        	pingSender.cancelAllTimers();
         }
         try {
             mqttClient.disconnectForcibly(0, 1);
