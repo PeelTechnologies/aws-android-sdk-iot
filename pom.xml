@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.PeelTechnologies</groupId>
   <artifactId>aws-android-sdk-iot</artifactId>
-  <version>2.6.18_5</version>
+  <version>2.6.18_6</version>
   <packaging>jar</packaging>
   <name>AWS SDK for Android - AWS IoT</name>
   <description>The AWS Android SDK for AWS IoT module holds the client classes that are used for communicating with AWS IoT Service</description>
