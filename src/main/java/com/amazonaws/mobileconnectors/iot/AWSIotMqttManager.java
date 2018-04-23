@@ -710,18 +710,23 @@ public class AWSIotMqttManager {
         // create a thread as the credentials provider getCredentials() call may require
         // a network call and will possibly block this connect() call
         new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (mqttLWT != null) {
-                    options.setWill(mqttLWT.getTopic(), mqttLWT.getMessage().getBytes(),
-                            mqttLWT.getQos().asInt(), false);
-                }
-                AWSIotWebSocketUrlSigner signer = new AWSIotWebSocketUrlSigner("iotdata");
-                String mqttWebSocketURL = signer.getSignedUrl(webSocketEndpoint,
-                        clientCredentialsProvider.getCredentials(), System.currentTimeMillis());
-                options.setServerURIs(new String[] {mqttWebSocketURL});
-                mqttConnect(options, statusCallback);
-            }
+			@Override
+			public void run() {
+				try {
+					if (mqttLWT != null) {
+						options.setWill(mqttLWT.getTopic(), mqttLWT.getMessage().getBytes(), mqttLWT.getQos().asInt(),
+								false);
+					}
+					AWSIotWebSocketUrlSigner signer = new AWSIotWebSocketUrlSigner("iotdata");
+					String mqttWebSocketURL = signer.getSignedUrl(webSocketEndpoint,
+							clientCredentialsProvider.getCredentials(), System.currentTimeMillis());
+					options.setServerURIs(new String[] { mqttWebSocketURL });
+					mqttConnect(options, statusCallback);
+				} catch (IllegalStateException e) {
+					// mutating the options, another thread already connecting
+					LOGGER.warn("connection problem", e);
+				}
+			}
         }, "Mqtt Connect Thread").start();
     }
 
