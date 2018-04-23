@@ -722,7 +722,7 @@ public class AWSIotMqttManager {
 							clientCredentialsProvider.getCredentials(), System.currentTimeMillis());
 					options.setServerURIs(new String[] { mqttWebSocketURL });
 					mqttConnect(options, statusCallback);
-				} catch (java.lang.IllegalStateException e) {
+				} catch (IllegalStateException e) {
 					// mutating the options, another thread already connecting
 					LOGGER.warn("connection problem", e);
 				}
