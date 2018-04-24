@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
 
 import javax.net.SocketFactory;
 
@@ -1136,7 +1135,17 @@ public class AWSIotMqttManager {
         if (mqttClient.isConnected()) {
             if (mqttMessageQueue.isEmpty()) {
                 try {
-                    mqttClient.publish(topic, data, qos.asInt(), false, publishMessageUserData, null);
+                    mqttClient.publish(topic, data, qos.asInt(), false, publishMessageUserData, new IMqttActionListener() {
+                        @Override
+                        public void onSuccess(IMqttToken asyncActionToken) {
+                            callback.statusChanged(AWSIotMqttMessageDeliveryCallback.MessageDeliveryStatus.Success, userData);
+                        }
+
+                        @Override
+                        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                            callback.statusChanged(AWSIotMqttMessageDeliveryCallback.MessageDeliveryStatus.Fail, userData);
+                        }
+                    });
                 } catch (final MqttException e) {
                     if (callback != null) {
                         userPublishCallback(callback,
