@@ -1116,7 +1116,7 @@ public class AWSIotMqttManager {
      *                 callback is invoked.
      */
     public void publishData(byte[] data, String topic, AWSIotMqttQos qos,
-            AWSIotMqttMessageDeliveryCallback callback, Object userData) {
+            final AWSIotMqttMessageDeliveryCallback callback, final Object userData) {
 
         if (topic == null || topic.isEmpty()) {
             throw new IllegalArgumentException("topic is null or empty");
