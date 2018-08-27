@@ -803,6 +803,7 @@ public class AWSIotMqttManager {
                     connectionState = MqttManagerConnectionState.Disconnecting;
                     userConnectionCallback();
                     break;
+                case MqttException.REASON_CODE_CLIENT_CLOSED:
                 case MqttException.REASON_CODE_CONNECTION_LOST:
                     connectionState = MqttManagerConnectionState.Disconnected;
                     userConnectionCallback(e);
